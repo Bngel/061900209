@@ -53,6 +53,7 @@ def initChai():
         wubi98.encoder[nameChar] = code
     return wubi98
 
+
 def createRegex(chai, fileName):
     finalRegex = dict()
     file = open(fileName, encoding="utf-8")
@@ -89,6 +90,7 @@ def createRegex(chai, fileName):
         line = file.readline()
     return finalRegex
 
+
 def matchForbidden(regex, fileName):
     file = open(fileName, encoding="utf-8")
     print(regex)
@@ -104,18 +106,47 @@ def matchForbidden(regex, fileName):
                 for o in fbd:
                     ansList.append("Line{}: <{}> {}".format(cnt, key, o))
                     total += 1
+            else:
+                cw = dict()
+                for i in range(len(line)):
+                    curPinyin = lp(line[i])[0]
+                    keyPinyin = lp(key)
+                    if curPinyin in keyPinyin:
+                        fb = key[keyPinyin.index(curPinyin)]
+                        cw[i]=line[i]
+                        if 0 < i < len(line)-1:
+                            line = line[:i] + fb + line[i + 1:]
+                        elif i == 0:
+                            line = fb + line[i + 1:]
+                        elif i == len(line)-1:
+                            line = line[:i] + fb
+                fd = re.findall(regex[key], line, re.I)
+                if len(fd) > 0:
+                    for o in fd:
+                        pos = line.index(o)
+                        for p in range(len(o)):
+                            if pos+p in cw.keys():
+                                o = str(o).replace(o[p], cw[pos+p])
+                        ansList.append("Line{}: <{}> {}".format(cnt, key, o))
+                        total += 1
         line = file.readline()
         cnt += 1
     return total, ansList
 
 
-
 if __name__ == '__main__':
-    #forbiddenFileName = sys.argv[1]
+    # forbiddenFileName = sys.argv[1]
     chai = initChai()
     regex = createRegex(chai, "words.txt")
-    total, fbdList = matchForbidden(regex, "test.txt")
+    total, fbdList = matchForbidden(regex, "org.txt")
     print("Total: {}".format(total))
 
+    file = open("ans.txt", encoding="utf-8")
+    temp = file.readline()
+    tt = []
+    while temp:
+        tt.append(temp.strip())
+        temp = file.readline()
     for fbd in fbdList:
-        print(fbd)
+        if fbd not in tt:
+            print(fbd)
