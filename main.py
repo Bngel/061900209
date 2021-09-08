@@ -127,8 +127,8 @@ def matchForbidden(regex, fileName):
                         for p in range(len(o)):
                             if pos+p in cw.keys():
                                 o = str(o).replace(o[p], cw[pos+p])
-                        ansList.append("Line{}: <{}> {}".format(cnt, key, o))
-                        total += 1
+                                ansList.append("Line{}: <{}> {}".format(cnt, key, o))
+                                total += 1
         line = file.readline()
         cnt += 1
     return total, ansList
@@ -140,7 +140,9 @@ if __name__ == '__main__':
     regex = createRegex(chai, "words.txt")
     total, fbdList = matchForbidden(regex, "org.txt")
     print("Total: {}".format(total))
-
+    for d in fbdList:
+        print(d)
+'''
     file = open("ans.txt", encoding="utf-8")
     temp = file.readline()
     tt = []
@@ -150,3 +152,4 @@ if __name__ == '__main__':
     for fbd in fbdList:
         if fbd not in tt:
             print(fbd)
+'''
