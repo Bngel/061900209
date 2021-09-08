@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from pychai import Schema
 import sys
 import re
@@ -93,7 +93,6 @@ def createRegex(chai, fileName):
 
 def matchForbidden(regex, fileName):
     file = open(fileName, encoding="utf-8")
-    print(regex)
     line = file.readline()
     cnt = 1
     total = 0
@@ -135,21 +134,12 @@ def matchForbidden(regex, fileName):
 
 
 if __name__ == '__main__':
-    # forbiddenFileName = sys.argv[1]
+    forbiddenFileName = sys.argv[1]
+    orgFileName = sys.argv[2]
+    ansFileName = sys.argv[3]
     chai = initChai()
-    regex = createRegex(chai, "words.txt")
-    total, fbdList = matchForbidden(regex, "org.txt")
+    regex = createRegex(chai, forbiddenFileName)
+    total, fbdList = matchForbidden(regex, orgFileName)
     print("Total: {}".format(total))
     for d in fbdList:
         print(d)
-'''
-    file = open("ans.txt", encoding="utf-8")
-    temp = file.readline()
-    tt = []
-    while temp:
-        tt.append(temp.strip())
-        temp = file.readline()
-    for fbd in fbdList:
-        if fbd not in tt:
-            print(fbd)
-'''
