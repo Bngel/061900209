@@ -116,12 +116,13 @@ def matchForbidden(regex, fileName):
                 match = o.group()
                 for tk in cw.keys():
                     if span[0] <= tk < span[1]:
-                        if tk == 0:
-                            match = cw[tk][0] + match[tk + 1:]
-                        elif tk == len(match) -1:
-                            match[:tk] + cw[tk][0]
-                        elif 0 < tk < len(match) - 1:
-                            match = match[:tk] + cw[tk][0] + match[tk + 1:]
+                        cur = tk-span[0]
+                        if cur == 0:
+                            match = cw[tk][0] + match[cur + 1:]
+                        elif cur == len(match) - 1:
+                            match = match[:cur] + cw[tk][0]
+                        elif 0 < cur < len(match) - 1:
+                            match = match[:cur] + cw[tk][0] + match[cur + 1:]
 
                 ansList.append("Line{}: <{}> {}".format(cnt, key, match))
                 total += 1
@@ -146,7 +147,7 @@ if __name__ == '__main__':
         ansFileName = sys.argv[3]
     else:
         forbiddenFileName = "words.txt"
-        orgFileName = "test.txt"
+        orgFileName = "org.txt"
         ansFileName = "ans.txt"
     chai = initChai()
     regex = createRegex(chai, forbiddenFileName)
