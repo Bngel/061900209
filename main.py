@@ -116,13 +116,28 @@ def matchForbidden(regex, fileName):
                 match = o.group()
                 for tk in cw.keys():
                     if span[0] <= tk < span[1]:
-                        match = match.replace(cw[tk][1], cw[tk][0])
+                        if tk == 0:
+                            match = cw[tk][0] + match[tk + 1:]
+                        elif tk == len(match) -1:
+                            match[:tk] + cw[tk][0]
+                        elif 0 < tk < len(match) - 1:
+                            match = match[:tk] + cw[tk][0] + match[tk + 1:]
+
                 ansList.append("Line{}: <{}> {}".format(cnt, key, match))
                 total += 1
         line = file.readline()
         cnt += 1
     return total, ansList
 
+
+def test(words, org, ans):
+    forbiddenFileName = words
+    orgFileName = org
+    ansFileName = ans
+    chai = initChai()
+    regex = createRegex(chai, forbiddenFileName)
+    total, fbdList = matchForbidden(regex, orgFileName)
+    return fbdList
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
