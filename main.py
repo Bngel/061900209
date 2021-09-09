@@ -4,6 +4,7 @@ import sys
 import re
 from pypinyin import lazy_pinyin as lp
 
+
 def initChai():
     wubi98 = Schema('wubi98')
     wubi98.run()
@@ -52,11 +53,14 @@ def initChai():
         wubi98.encoder[nameChar] = code
     return wubi98
 
+
 def createRegex(chai, fileName):
     finalRegex = dict()
     file = open(fileName, encoding="utf-8")
     line = file.readline()
+    chaiRegex = dict()
     while line != "":
+        cb = ""
         forbidden = ""
         first = True
         for word in line:
@@ -77,6 +81,7 @@ def createRegex(chai, fileName):
                 forbidden += "(?:{}{}|{}|{}|{})".format(
                     chai.tree[word].first.name[0], chai.tree[word].second.name[0],
                     pinyin[0], pinyin[0][0], word)
+                cb += "(?:{}{})".format(chai.tree[word].first.name[0], chai.tree[word].second.name[0])
             else:
                 if first:
                     first = False
@@ -85,10 +90,13 @@ def createRegex(chai, fileName):
                 pinyin = lp(word)
                 forbidden += "(?:{}|{}|{})".format(pinyin[0], pinyin[0][0], word)
         finalRegex[line.strip()] = forbidden
+        if cb != "":
+            chaiRegex[line.strip()] = cb
         line = file.readline()
-    return finalRegex
+    return finalRegex, chaiRegex
 
-def matchForbidden(regex, fileName):
+
+def matchForbidden(regex, cr, fileName):
     file = open(fileName, encoding="utf-8")
     line = file.readline()
     cnt = 1
@@ -98,11 +106,19 @@ def matchForbidden(regex, fileName):
         line = line.strip()
         cw = dict()
         for key in regex.keys():
+            if key in cr.keys():
+                fr = re.finditer(cr[key], line, re.I)
+                for o in fr:
+                    match = o.group()
+                    ansList.append("Line{}: <{}> {}".format(cnt, key, match))
+                    total += 1
             for i in range(len(line)):
                 curPinyin = lp(line[i])[0]
                 keyPinyin = lp(key)
                 if curPinyin in keyPinyin:
                     fb = key[keyPinyin.index(curPinyin)]
+                    if line[i] in key:
+                        continue
                     cw[i] = [line[i], fb]
                     if 0 < i < len(line) - 1:
                         line = line[:i] + fb + line[i + 1:]
@@ -116,14 +132,13 @@ def matchForbidden(regex, fileName):
                 match = o.group()
                 for tk in cw.keys():
                     if span[0] <= tk < span[1]:
-                        cur = tk-span[0]
+                        cur = tk - span[0]
                         if cur == 0:
                             match = cw[tk][0] + match[cur + 1:]
                         elif cur == len(match) - 1:
                             match = match[:cur] + cw[tk][0]
                         elif 0 < cur < len(match) - 1:
                             match = match[:cur] + cw[tk][0] + match[cur + 1:]
-
                 ansList.append("Line{}: <{}> {}".format(cnt, key, match))
                 total += 1
         line = file.readline()
@@ -140,7 +155,9 @@ def test(words, org, ans):
     total, fbdList = matchForbidden(regex, orgFileName)
     return fbdList
 
+
 if __name__ == '__main__':
+
     if len(sys.argv) > 1:
         forbiddenFileName = sys.argv[1]
         orgFileName = sys.argv[2]
@@ -150,8 +167,8 @@ if __name__ == '__main__':
         orgFileName = "org.txt"
         ansFileName = "ans.txt"
     chai = initChai()
-    regex = createRegex(chai, forbiddenFileName)
-    total, fbdList = matchForbidden(regex, orgFileName)
+    regex, cr = createRegex(chai, forbiddenFileName)
+    total, fbdList = matchForbidden(regex, cr, orgFileName)
     print("Total: {}".format(total))
     for d in fbdList:
         print(d)
