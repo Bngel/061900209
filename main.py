@@ -4,7 +4,6 @@ import sys
 import re
 from pypinyin import lazy_pinyin as lp
 
-
 def initChai():
     wubi98 = Schema('wubi98')
     wubi98.run()
@@ -53,7 +52,6 @@ def initChai():
         wubi98.encoder[nameChar] = code
     return wubi98
 
-
 def createRegex(chai, fileName):
     finalRegex = dict()
     file = open(fileName, encoding="utf-8")
@@ -90,7 +88,6 @@ def createRegex(chai, fileName):
         line = file.readline()
     return finalRegex
 
-
 def matchForbidden(regex, fileName):
     file = open(fileName, encoding="utf-8")
     line = file.readline()
@@ -99,35 +96,31 @@ def matchForbidden(regex, fileName):
     ansList = list()
     while line:
         line = line.strip()
+        cw = dict()
         for key in regex.keys():
-            fbd = re.findall(regex[key], line, re.I)
-            if len(fbd) > 0:
-                for o in fbd:
-                    ansList.append("Line{}: <{}> {}".format(cnt, key, o))
-                    total += 1
-            else:
-                cw = dict()
-                for i in range(len(line)):
-                    curPinyin = lp(line[i])[0]
-                    keyPinyin = lp(key)
-                    if curPinyin in keyPinyin:
-                        fb = key[keyPinyin.index(curPinyin)]
-                        cw[i]=line[i]
-                        if 0 < i < len(line)-1:
-                            line = line[:i] + fb + line[i + 1:]
-                        elif i == 0:
-                            line = fb + line[i + 1:]
-                        elif i == len(line)-1:
-                            line = line[:i] + fb
-                fd = re.findall(regex[key], line, re.I)
-                if len(fd) > 0:
-                    for o in fd:
-                        pos = line.index(o)
-                        for p in range(len(o)):
-                            if pos+p in cw.keys():
-                                o = str(o).replace(o[p], cw[pos+p])
-                                ansList.append("Line{}: <{}> {}".format(cnt, key, o))
-                                total += 1
+            for i in range(len(line)):
+                curPinyin = lp(line[i])[0]
+                keyPinyin = lp(key)
+                if curPinyin in keyPinyin:
+                    fb = key[keyPinyin.index(curPinyin)]
+                    if fb in key:
+                        continue
+                    cw[i] = [line[i], fb]
+                    if 0 < i < len(line) - 1:
+                        line = line[:i] + fb + line[i + 1:]
+                    elif i == 0:
+                        line = fb + line[i + 1:]
+                    elif i == len(line) - 1:
+                        line = line[:i] + fb
+            fd = re.finditer(regex[key], line, re.I)
+            for o in fd:
+                span = o.span()
+                match = o.group()
+                for tk in cw.keys():
+                    if span[0] <= tk < span[1]:
+                        match = match.replace(cw[tk][1], cw[tk][0])
+                ansList.append("Line{}: <{}> {}".format(cnt, key, match))
+                total += 1
         line = file.readline()
         cnt += 1
     return total, ansList
