@@ -103,8 +103,6 @@ def matchForbidden(regex, fileName):
                 keyPinyin = lp(key)
                 if curPinyin in keyPinyin:
                     fb = key[keyPinyin.index(curPinyin)]
-                    if fb in key:
-                        continue
                     cw[i] = [line[i], fb]
                     if 0 < i < len(line) - 1:
                         line = line[:i] + fb + line[i + 1:]
@@ -127,9 +125,14 @@ def matchForbidden(regex, fileName):
 
 
 if __name__ == '__main__':
-    forbiddenFileName = sys.argv[1]
-    orgFileName = sys.argv[2]
-    ansFileName = sys.argv[3]
+    if len(sys.argv) > 1:
+        forbiddenFileName = sys.argv[1]
+        orgFileName = sys.argv[2]
+        ansFileName = sys.argv[3]
+    else:
+        forbiddenFileName = "words.txt"
+        orgFileName = "test.txt"
+        ansFileName = "ans.txt"
     chai = initChai()
     regex = createRegex(chai, forbiddenFileName)
     total, fbdList = matchForbidden(regex, orgFileName)
