@@ -103,12 +103,13 @@ def matchForbidden(regex, cr, fileName):
     while line:
         line = line.strip()
         cw = dict()
+        tempList = []
         for key in regex.keys():
             if key in cr.keys():
                 fr = re.finditer(cr[key], line, re.I)
                 for o in fr:
                     match = o.group()
-                    ansList.append("Line{}: <{}> {}".format(cnt, key, match))
+                    tempList.append({o.span()[0]:"Line{}: <{}> {}".format(cnt, key, match)})
                     total += 1
             for i in range(len(line)):
                 curPinyin = lp(line[i])[0]
@@ -137,8 +138,13 @@ def matchForbidden(regex, cr, fileName):
                             match = match[:cur] + cw[tk][0]
                         elif 0 < cur < len(match) - 1:
                             match = match[:cur] + cw[tk][0] + match[cur + 1:]
-                ansList.append("Line{}: <{}> {}".format(cnt, key, match))
+                tempList.append({o.span()[0]:"Line{}: <{}> {}".format(cnt, key, match)})
                 total += 1
+        tempList = sorted(tempList, key=lambda x: (list(x.keys()))[0])
+        addList = []
+        for temp in tempList:
+            addList.append(list(temp.values())[0])
+        ansList.extend(addList)
         line = file.readline()
         cnt += 1
     return total, ansList
