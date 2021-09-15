@@ -79,7 +79,10 @@ def createRegex(chai, fileName):
                     forbidden += "[^\\u4e00-\\u9fa5]*"
                 pinyin = lp(word)
                 forbidden += "(?:{}|{}|{})".format(pinyin[0], pinyin[0][0], word)
-                cb += "(?:{}{})".format(chai.tree[word].first.name[0], chai.tree[word].second.name[0])
+                if chai.tree[word].second.name != "":
+                    cb += "(?:{}{})".format(chai.tree[word].first.name[0], chai.tree[word].second.name[0])
+                else:
+                    cb += "(?:{})".format(chai.tree[word].first.name[0])
             else:
                 if first:
                     first = False
