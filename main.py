@@ -177,6 +177,13 @@ if __name__ == '__main__':
     chai = initChai()
     regex, cr = createRegex(chai, forbiddenFileName)
     total, fbdList = matchForbidden(regex, cr, orgFileName)
-    print("Total: {}".format(total))
-    for d in fbdList:
-        print(d)
+    ans = open(ansFileName, mode="w+", encoding="utf-8")
+    if total > 0:
+        ans.write("Total: {}\n".format(total))
+    else:
+        ans.write("Total: {}".format(total))
+    for d in range(len(fbdList)):
+        if d == len(fbdList) - 1:
+            ans.write(fbdList[d])
+        else:
+            ans.write(fbdList[d] + '\n')
